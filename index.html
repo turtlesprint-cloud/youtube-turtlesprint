@@ -1,0 +1,1706 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>오토내비(AutoNavi) - 배민에서 길안내 누르면 배민앱이 사라지는 거 불편하지 않나요?</title>
+    <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #00D4FF;
+            --primary-dark: #0099CC;
+            --secondary: #00A8E6;
+            --accent: #00FFB3;
+            --dark: #0B0F1A;
+            --dark-lighter: #151B2E;
+            --dark-card: #1A2135;
+            --glass: rgba(255, 255, 255, 0.08);
+            --glass-hover: rgba(255, 255, 255, 0.12);
+            --border: rgba(255, 255, 255, 0.15);
+            --border-hover: rgba(0, 212, 255, 0.5);
+            --red: #FF4757;
+            --yellow: #FFC107;
+            --green: #2ECC71;
+            --purple: #9B59B6;
+            --text-primary: #FFFFFF;
+            --text-secondary: #F3F4F6;
+            --text-muted: #D1D5DB;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, var(--dark) 0%, #0D1421 50%, var(--dark-lighter) 100%);
+            color: var(--text-secondary);
+            line-height: 1.7;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 20% 80%, rgba(0, 255, 179, 0.02) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        h1 {
+            font-size: clamp(2.5rem, 6vw, 5rem);
+            line-height: 1.2;
+            font-weight: 900;
+            color: var(--text-primary);
+            letter-spacing: -0.02em;
+        }
+
+        h2 {
+            font-size: clamp(2.25rem, 5vw, 3.75rem);
+            line-height: 1.3;
+            font-weight: 800;
+            color: var(--text-primary);
+            letter-spacing: -0.01em;
+        }
+
+        h3 {
+            font-size: clamp(1.5rem, 3.5vw, 2.5rem);
+            line-height: 1.4;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        p {
+            font-size: clamp(1.125rem, 2.5vw, 1.375rem);
+            line-height: 1.8;
+            color: var(--text-secondary);
+            font-weight: 400;
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            filter: brightness(1.2);
+        }
+
+        .danger-text {
+            background: linear-gradient(135deg, #FF4757 0%, #FF8E9B 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            filter: brightness(1.1);
+        }
+
+        .main-btn {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: #000000;
+            padding: clamp(20px, 3.5vw, 28px) clamp(40px, 6vw, 56px);
+            border-radius: 50px;
+            font-size: clamp(1.125rem, 2.5vw, 1.5rem);
+            font-weight: 700;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 25px rgba(0, 212, 255, 0.3);
+            border: none;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .main-btn:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 15px 35px rgba(0, 212, 255, 0.4);
+        }
+
+        .card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: clamp(24px, 4vw, 32px);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.06) 100%);
+            border-color: var(--border-hover);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .problem-card {
+            background: linear-gradient(135deg, rgba(255, 71, 87, 0.15) 0%, rgba(255, 71, 87, 0.08) 100%);
+            backdrop-filter: blur(20px);
+            border: 2px solid rgba(255, 71, 87, 0.4);
+            border-left: 6px solid var(--red);
+            padding: clamp(24px, 4vw, 32px);
+            margin: clamp(20px, 3vw, 28px) 0;
+            border-radius: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .problem-card:hover {
+            transform: translateX(6px);
+            box-shadow: 0 15px 30px rgba(255, 71, 87, 0.2);
+        }
+
+        .problem-card h3 {
+            font-size: clamp(1.5rem, 3vw, 2.125rem);
+            margin-bottom: clamp(12px, 2vw, 16px);
+            color: #FF6B7A;
+            font-weight: 700;
+        }
+
+        .problem-card p {
+            font-size: clamp(1.125rem, 2.5vw, 1.375rem);
+            line-height: 1.8;
+            color: var(--text-secondary);
+        }
+
+        .problem-card strong {
+            color: #FF8E9B;
+            font-weight: 600;
+        }
+
+        .solution-card {
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.15) 0%, rgba(0, 255, 179, 0.08) 100%);
+            backdrop-filter: blur(20px);
+            border: 2px solid rgba(0, 212, 255, 0.4);
+            border-left: 6px solid var(--primary);
+            padding: clamp(24px, 4vw, 32px);
+            margin: clamp(20px, 3vw, 28px) 0;
+            border-radius: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .solution-card:hover {
+            transform: translateX(6px);
+            box-shadow: 0 15px 30px rgba(0, 212, 255, 0.2);
+        }
+
+        .solution-card h3 {
+            font-size: clamp(1.5rem, 3vw, 2.125rem);
+            margin-bottom: clamp(12px, 2vw, 16px);
+            color: var(--primary);
+            font-weight: 700;
+        }
+
+        .solution-card p {
+            font-size: clamp(1.125rem, 2.5vw, 1.375rem);
+            line-height: 1.8;
+            color: var(--text-secondary);
+        }
+
+        .solution-card strong {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .data-card {
+            background: linear-gradient(135deg, rgba(46, 204, 113, 0.18) 0%, rgba(46, 204, 113, 0.08) 100%);
+            backdrop-filter: blur(20px);
+            border: 3px solid rgba(46, 204, 113, 0.5);
+            border-radius: 20px;
+            padding: clamp(28px, 4vw, 40px);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .data-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 20px 40px rgba(46, 204, 113, 0.2);
+        }
+
+        .data-card h3 {
+            font-size: clamp(1.75rem, 3.5vw, 2.375rem);
+            margin-bottom: clamp(16px, 3vw, 24px);
+        }
+
+        .data-card p {
+            font-size: clamp(1.125rem, 2.5vw, 1.5rem);
+        }
+
+        .review-card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+            backdrop-filter: blur(20px);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: clamp(24px, 4vw, 32px);
+            margin: 20px 0;
+            transition: all 0.3s ease;
+        }
+
+        .review-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--border-hover);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .review-before {
+            background: linear-gradient(135deg, rgba(255, 71, 87, 0.18) 0%, rgba(255, 71, 87, 0.08) 100%);
+            border: 2px solid rgba(255, 71, 87, 0.4);
+            border-radius: 12px;
+            padding: clamp(16px, 3vw, 24px);
+            margin-bottom: 20px;
+        }
+
+        .review-before p {
+            font-size: clamp(1.1rem, 2.25vw, 1.3rem);
+            color: var(--text-muted);
+        }
+
+        .review-after {
+            background: linear-gradient(135deg, rgba(46, 204, 113, 0.18) 0%, rgba(46, 204, 113, 0.08) 100%);
+            border: 2px solid rgba(46, 204, 113, 0.4);
+            border-radius: 12px;
+            padding: clamp(16px, 3vw, 24px);
+        }
+
+        .review-after p {
+            font-size: clamp(1.125rem, 2.5vw, 1.375rem);
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        .warning-box {
+            background: linear-gradient(135deg, rgba(255, 193, 7, 0.18) 0%, rgba(255, 193, 7, 0.08) 100%);
+            backdrop-filter: blur(20px);
+            border: 3px solid rgba(255, 193, 7, 0.5);
+            border-radius: 16px;
+            padding: clamp(24px, 4vw, 32px);
+            margin: clamp(24px, 4vw, 32px) 0;
+        }
+
+        .warning-box h3 {
+            font-size: clamp(1.5rem, 3vw, 1.875rem);
+            color: var(--yellow);
+            margin-bottom: clamp(12px, 2vw, 16px);
+        }
+
+        .warning-box p {
+            font-size: clamp(1.125rem, 2.5vw, 1.375rem);
+            color: var(--text-secondary);
+            line-height: 1.8;
+        }
+
+        .warning-box strong {
+            color: var(--yellow);
+            font-weight: 600;
+        }
+
+        .success-box {
+            background: linear-gradient(135deg, rgba(46, 204, 113, 0.18) 0%, rgba(46, 204, 113, 0.08) 100%);
+            backdrop-filter: blur(20px);
+            border: 3px solid rgba(46, 204, 113, 0.5);
+            border-radius: 16px;
+            padding: clamp(24px, 4vw, 32px);
+            margin: clamp(24px, 4vw, 32px) 0;
+        }
+
+        .success-box h3 {
+            font-size: clamp(1.5rem, 3vw, 1.875rem);
+            color: var(--green);
+            margin-bottom: clamp(12px, 2vw, 16px);
+        }
+
+        .success-box p {
+            font-size: clamp(1.125rem, 2.5vw, 1.375rem);
+            color: var(--text-secondary);
+            line-height: 1.8;
+        }
+
+        .success-box strong {
+            color: var(--green);
+            font-weight: 600;
+        }
+
+        .info-box {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.18) 0%, rgba(59, 130, 246, 0.08) 100%);
+            backdrop-filter: blur(20px);
+            border: 3px solid rgba(59, 130, 246, 0.5);
+            border-radius: 16px;
+            padding: clamp(24px, 4vw, 32px);
+            margin: clamp(24px, 4vw, 32px) 0;
+        }
+
+        .info-box h3 {
+            font-size: clamp(1.5rem, 3vw, 1.875rem);
+            color: #60A5FA;
+            margin-bottom: clamp(12px, 2vw, 16px);
+        }
+
+        .info-box p {
+            font-size: clamp(1.125rem, 2.5vw, 1.375rem);
+            color: var(--text-secondary);
+            line-height: 1.8;
+        }
+
+        .info-box strong {
+            color: #60A5FA;
+            font-weight: 600;
+        }
+
+        .pricing-section {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%);
+            border-radius: 32px;
+            padding: clamp(32px, 5vw, 48px) clamp(20px, 3vw, 32px);
+            border: 2px solid rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+        }
+
+        .pricing-card {
+            border: 3px solid transparent;
+            border-radius: 32px;
+            padding: clamp(32px, 5vw, 48px) clamp(24px, 4vw, 32px);
+            text-align: center;
+            margin-bottom: 24px;
+            transition: all 0.5s ease;
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(25px);
+        }
+
+        .pricing-card:hover {
+            transform: translateY(-15px) scale(1.02);
+        }
+
+        .pricing-card h3 {
+            font-size: clamp(1.75rem, 3.5vw, 2.375rem);
+            margin-bottom: clamp(16px, 3vw, 24px);
+            font-weight: 800;
+        }
+
+        .pricing-card .price-main {
+            font-size: clamp(2.5rem, 5vw, 3.75rem);
+            font-weight: 900;
+            margin: clamp(16px, 3vw, 24px) 0;
+            color: var(--text-primary);
+        }
+
+        .pricing-card .price-daily {
+            font-size: clamp(1.125rem, 2.5vw, 1.5rem);
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .pricing-card .price-original {
+            font-size: clamp(1.125rem, 2.5vw, 1.375rem);
+            text-decoration: line-through;
+            color: var(--text-muted);
+            opacity: 0.8;
+        }
+
+        .pricing-card .price-discount {
+            font-size: clamp(1.1rem, 2.25vw, 1.3rem);
+            margin: 12px 0;
+            font-weight: 700;
+        }
+
+        .pricing-card .price-features {
+            margin-top: clamp(20px, 3vw, 28px);
+            padding: clamp(16px, 3vw, 24px);
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            text-align: left;
+        }
+
+        .pricing-card .price-features p {
+            margin: clamp(8px, 1.5vw, 12px) 0;
+            font-size: clamp(1.1rem, 2.25vw, 1.25rem);
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .pricing-card.basic {
+            background: linear-gradient(145deg, 
+                rgba(30, 58, 138, 0.5) 0%, 
+                rgba(59, 130, 246, 0.35) 100%);
+            border: 3px solid rgba(59, 130, 246, 0.5);
+        }
+
+        .pricing-card.standard {
+            background: linear-gradient(145deg, 
+                rgba(6, 78, 59, 0.5) 0%, 
+                rgba(16, 185, 129, 0.35) 100%);
+            border: 3px solid rgba(16, 185, 129, 0.5);
+        }
+
+        .pricing-card.premium {
+            background: linear-gradient(145deg, 
+                rgba(76, 29, 149, 0.5) 0%, 
+                rgba(139, 92, 246, 0.35) 100%);
+            border: 3px solid rgba(139, 92, 246, 0.5);
+        }
+
+        .popular-badge {
+            position: absolute;
+            top: -18px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, #FF1744 0%, #FFD700 100%);
+            color: white;
+            padding: clamp(12px, 2vw, 16px) clamp(24px, 4vw, 32px);
+            border-radius: 30px;
+            font-weight: 900;
+            font-size: clamp(0.9rem, 2vw, 1.1rem);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            animation: bounce 2s infinite;
+            box-shadow: 0 10px 30px rgba(255, 23, 68, 0.4);
+            border: 3px solid rgba(255, 255, 255, 0.9);
+            z-index: 10;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 53%, 80%, 100% { transform: translateX(-50%) translateY(0); }
+            40%, 43% { transform: translateX(-50%) translateY(-6px); }
+        }
+
+        .video-wrapper {
+            position: relative;
+            padding-bottom: 56.25%;
+            height: 0;
+            overflow: hidden;
+            border-radius: 20px;
+            background: #000;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+            margin-bottom: clamp(20px, 3vw, 28px);
+            border: 2px solid var(--border);
+        }
+
+        .video-wrapper iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+            border-radius: 20px;
+        }
+
+        .timer-box {
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0.6) 100%);
+            backdrop-filter: blur(15px);
+            border: 3px solid var(--primary);
+            border-radius: 16px;
+            padding: clamp(16px, 2.5vw, 24px) clamp(20px, 3.5vw, 28px);
+            min-width: clamp(80px, 12vw, 95px);
+            transition: all 0.3s ease;
+        }
+
+        .timer-number {
+            font-size: clamp(1.75rem, 3.5vw, 2.375rem);
+            font-weight: 800;
+            color: var(--primary);
+            line-height: 1;
+        }
+
+        .timer-label {
+            font-size: clamp(1rem, 2vw, 1.125rem);
+            color: var(--text-muted);
+            margin-top: 6px;
+            font-weight: 500;
+        }
+
+        .form-input {
+            width: 100%;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+            backdrop-filter: blur(15px);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: clamp(16px, 3vw, 20px) clamp(20px, 3.5vw, 28px);
+            border-radius: 12px;
+            font-size: clamp(1.125rem, 2.5vw, 1.375rem);
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.08) 100%);
+            box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.15);
+        }
+
+        .form-input::placeholder {
+            color: var(--text-muted);
+            opacity: 0.8;
+        }
+
+        .section-divider {
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--primary), transparent);
+            margin: clamp(60px, 10vw, 80px) 0;
+            opacity: 0.5;
+        }
+
+        .thank-you-message {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(11, 15, 26, 0.95);
+            color: white;
+            z-index: 1000;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+            backdrop-filter: blur(30px);
+        }
+
+        .message-content {
+            max-width: 600px;
+            width: 90%;
+            background: linear-gradient(145deg, 
+                rgba(255, 255, 255, 0.1) 0%, 
+                rgba(0, 212, 255, 0.05) 100%);
+            backdrop-filter: blur(40px);
+            border: 3px solid rgba(0, 212, 255, 0.3);
+            border-radius: 40px;
+            padding: clamp(40px, 6vw, 60px) clamp(30px, 5vw, 40px);
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.4);
+        }
+
+        .thank-you-title {
+            font-size: clamp(2.5rem, 6vw, 4rem);
+            font-weight: 900;
+            margin-bottom: clamp(30px, 5vw, 40px);
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .message-list {
+            list-style: none;
+            padding: 0;
+            margin: clamp(30px, 5vw, 40px) 0;
+        }
+
+        .message-list li {
+            margin: clamp(20px, 3vw, 30px) 0;
+            font-size: clamp(1.125rem, 2.5vw, 1.5rem);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            text-align: left;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            padding: clamp(16px, 3vw, 24px);
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.15);
+        }
+
+        .message-list li .icon {
+            margin-right: clamp(16px, 3vw, 20px);
+            font-size: clamp(1.75rem, 3.5vw, 2.25rem);
+            min-width: 35px;
+        }
+
+        .thank-you-subtitle {
+            font-size: clamp(1.5rem, 3.5vw, 2.25rem);
+            font-weight: 800;
+            margin: clamp(30px, 5vw, 40px) 0;
+            color: var(--text-primary);
+        }
+
+        .close-btn {
+            background: linear-gradient(135deg, var(--accent) 0%, var(--primary) 100%);
+            color: #000000;
+            padding: clamp(18px, 3.5vw, 24px) clamp(44px, 7vw, 56px);
+            border-radius: 50px;
+            font-weight: 800;
+            font-size: clamp(1.25rem, 2.5vw, 1.5rem);
+            border: none;
+            cursor: pointer;
+            margin-top: clamp(30px, 5vw, 40px);
+            transition: all 0.4s ease;
+            box-shadow: 0 15px 35px rgba(0, 212, 255, 0.3);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .close-btn:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 25px 50px rgba(0, 212, 255, 0.4);
+        }
+
+        .application-notice {
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0.4) 100%);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: clamp(16px, 3vw, 20px) clamp(24px, 4vw, 32px);
+            display: inline-block;
+            border: 2px solid rgba(255, 193, 7, 0.4);
+            max-width: 650px;
+            margin: 0 auto;
+        }
+
+        .application-notice p {
+            margin: clamp(2px, 0.5vw, 4px) 0;
+            font-size: clamp(1rem, 2.25vw, 1.2rem);
+            color: var(--text-muted);
+            padding: 2px 0;
+        }
+
+        @media (max-width: 767px) {
+            .container {
+                padding: 0 20px;
+            }
+            
+            .problem-card .text-3xl,
+            .solution-card .text-4xl {
+                font-size: 2.5rem;
+            }
+            
+            .grid {
+                gap: 1.5rem;
+            }
+            
+            #countdown {
+                gap: 0.75rem;
+            }
+        }
+
+        @media (min-width: 768px) {
+            .container {
+                padding: 0 32px;
+            }
+            
+            section {
+                padding-top: 5rem;
+                padding-bottom: 5rem;
+            }
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--dark);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, var(--accent), var(--primary));
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-8px); }
+        }
+
+        .float-animation {
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .pulse-animation {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.85; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Thank You Message -->
+    <div id="thankYouMessage" class="thank-you-message">
+        <div class="message-content">
+            <h2 class="thank-you-title">신청 완료!</h2>
+            
+            <ul class="message-list">
+                <li>
+                    <span class="icon">📱</span>
+                    <span>최대한 빠른 시간 내에 카카오톡으로 설치 가이드를 전송해드리겠습니다</span>
+                </li>
+                <li>
+                    <span class="icon">⚡</span>
+                    <span>설치 완료 후 바로 30일 무료체험이 시작됩니다</span>
+                </li>
+                <li>
+                    <span class="icon">🎯</span>
+                    <span>궁금한 점은 카카오톡 ID: heysandmole로 연락주세요</span>
+                </li>
+            </ul>
+            
+            <p class="thank-you-subtitle">이제 배달이 정말 쉬워질 거예요!</p>
+            
+            <button class="close-btn" onclick="closeThankYouMessage()">
+                확인
+            </button>
+        </div>
+    </div>
+
+    <!-- Top Banner -->
+    <div class="bg-gradient-to-r from-red-600 via-red-500 to-red-700 py-4 text-center sticky top-0 z-50 pulse-animation backdrop-blur-sm">
+        <div class="container">
+            <p class="font-bold text-white" style="font-size: clamp(0.95rem, 2vw, 1.125rem);">
+                ⚠️ 잠깐! 배민에서 길안내 누르면 배민앱이 사라지는 거 불편하지 않나요? ⚠️
+            </p>
+        </div>
+    </div>
+
+    <!-- Hero Section -->
+    <section class="py-20 md:py-28 relative">
+        <div class="container">
+            <div class="text-center max-w-5xl mx-auto">
+                <div class="warning-box mb-10 md:mb-14">
+                    <p class="text-lg md:text-xl font-bold text-yellow-400 mb-3">배달기사들의 공통된 불편함</p>
+                    <p>
+                        "배민에서 길안내 누르면 배민앱이 백그라운드로 넘어가서 불편해..." <br/>
+                        "그래서 서브폰 써야 하는데 매번 주소를 수기로 입력하기 귀찮아..."
+                    </p>
+                </div>
+
+                <h1 class="mb-10 md:mb-14 leading-tight">
+                    서브폰에 주소를 수기로 입력하는 거 <br/>
+                    <span class="danger-text float-animation">진짜 귀찮지</span> 않나요?
+                </h1>
+                
+                <p class="text-xl md:text-2xl mb-8 md:mb-10 font-medium" style="color: var(--text-secondary);">
+                    배민 커넥트 "길안내" 터치 한 번으로<br/>
+                    서브폰에 주소 자동입력 + 내비 실행까지!
+                </p>
+
+                <div class="info-box mb-10 md:mb-14">
+                    <h3 class="font-bold mb-4">🤔 왜 서브폰을 써야 하나요?</h3>
+                    <p>
+                        배민 커넥트에서 길안내를 누르면 → 내비가 실행되면서 → 배민앱이 백그라운드로 넘어가요<br/>
+                        <strong>배민앱이 눈 앞에서 사라지니까 다음 주문 확인이 불편하죠</strong><br/>
+                        그래서 메인폰은 배민용, 서브폰은 내비용으로 나눠 쓰는 거예요
+                    </p>
+                </div>
+
+                <div class="success-box mb-10 md:mb-14">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+                        <div class="float-animation">
+                            <div class="text-4xl mb-4">⚡</div>
+                            <p class="font-bold text-green-400">원클릭 자동연동</p>
+                            <p>서브폰에 주소 치지 마세요</p>
+                        </div>
+                        <div class="float-animation" style="animation-delay: 0.5s;">
+                            <div class="text-4xl mb-4">🛡️</div>
+                            <p class="font-bold text-green-400">안전 운전</p>
+                            <p>단속카메라 위치 확인</p>
+                        </div>
+                        <div class="float-animation" style="animation-delay: 1s;">
+                            <div class="text-4xl mb-4">📈</div>
+                            <p class="font-bold text-green-400">거절률 감소</p>
+                            <p>모르는 지역도 자신있게</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex flex-col sm:flex-row gap-6 justify-center">
+                    <a href="#apply" class="main-btn">
+                        30일 무료로 써보기
+                    </a>
+                    <a href="#demo" class="card px-8 py-5 rounded-full inline-flex items-center justify-center border-2 border-primary hover:bg-primary hover:text-black transition-all duration-300">
+                        <i class="fas fa-play-circle mr-3 text-primary"></i>
+                        실제 작동 영상 보기
+                    </a>
+                </div>
+
+                <p class="text-gray-500 mt-6 font-medium">
+                    * 신용카드 정보 불필요 • 5분 설치 완료 • 언제든 해지 가능
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Problem Recognition Section -->
+    <section class="py-20 md:py-28 bg-gradient-to-b from-transparent to-black/20 relative">
+        <div class="container">
+            <div class="max-w-4xl mx-auto">
+                <h2 class="text-center mb-6">
+                    잠깐, 혹시 여러분들도...
+                </h2>
+                <p class="text-center text-gray-400 mb-14">
+                    이런 상황들 때문에 스트레스 받고 계시죠?
+                </p>
+                
+                <div class="problem-card">
+                    <div class="flex items-start gap-6">
+                        <span class="text-4xl">📱</span>
+                        <div>
+                            <h3>
+                                "서브폰에 주소를 수기로 입력하는 거 너무 귀찮아"
+                            </h3>
+                            <p>
+                                배민에서 길안내 터치 → 서브폰 들어서 → 주소를 수기로 입력하기 → 카카오맵에서 길찾기 → 내비 실행<br/>
+                                <strong>이 과정을 하루에 몇십 번씩 반복하면 진짜 스트레스예요</strong>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="problem-card">
+                    <div class="flex items-start gap-6">
+                        <span class="text-4xl">⌛</span>
+                        <div>
+                            <h3>
+                                "모르는 동네는 그냥 거절해버려"
+                            </h3>
+                            <p>
+                                수락률 유지하라고 하지만 솔직히 모르는 지역은 무서워서 거절하게 되죠.<br/>
+                                <strong>거절률 때문에 배민 리워드 등급이 걱정되고 페널티 받는 것도 스트레스</strong>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="problem-card">
+                    <div class="flex items-start gap-6">
+                        <span class="text-4xl">📷</span>
+                        <div>
+                            <h3>
+                                "과속단속 어디 있는지 몰라서 무서워"
+                            </h3>
+                            <p>
+                                후면카메라 과속단속 한 번 걸리면 3-5만원 벌금에 벌점까지.<br/>
+                                <strong>단속 위치 미리 알고 안전하게 운전하고 싶어요</strong>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="problem-card">
+                    <div class="flex items-start gap-6">
+                        <span class="text-4xl">⏰</span>
+                        <div>
+                            <h3>
+                                "배달 효율이 떨어져서 수익이..."
+                            </h3>
+                            <p>
+                                주소 찾고, 길 헤매고, 거절하고... 이런 시간들이 쌓이면 하루 수익이 확실히 달라져요.<br/>
+                                <strong>시간=돈인데 이렇게 비효율적일 수는 없잖아요</strong>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="data-card mt-14">
+                    <h3>이게 바로 현실이에요</h3>
+                    <p>
+                        매일 반복되는 이런 스트레스들이 쌓이면서<br/>
+                        <strong class="text-green-400">진짜 편하고 효율적으로 일할 기회를 놓치고 있는 거예요</strong>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- Solution Presentation -->
+    <section class="py-20 md:py-28">
+        <div class="container">
+            <div class="max-w-5xl mx-auto">
+                <h2 class="text-center mb-8">
+                    그런데 말이죠...
+                </h2>
+                <p class="text-center text-gray-400 mb-14">
+                    이 모든 문제를 <span class="gradient-text font-bold">한 번에 해결</span>하는 방법이 있어요
+                </p>
+                
+                <div class="solution-card">
+                    <div class="flex items-start gap-8">
+                        <div class="text-5xl">⚡</div>
+                        <div>
+                            <h3>
+                                배민 "길안내" 1터치 = 서브폰 자동연동
+                            </h3>
+                            <p class="mb-6">
+                                배민 커넥트에서 "길안내" 터치하면 서브폰에 주소 자동입력 + 내비 실행까지!<br/>
+                                <strong>서브폰 건드릴 필요가 전혀 없어요</strong>
+                            </p>
+                            <div class="bg-blue-900/30 p-6 rounded-lg backdrop-blur-sm">
+                                <p class="text-blue-300">
+                                    ✓ 주소 수기 입력 불필요<br/>
+                                    ✓ 서브폰 조작 불필요<br/>
+                                    ✓ 운전 중에도 원클릭으로 안전하게
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="solution-card">
+                    <div class="flex items-start gap-8">
+                        <div class="text-5xl">🛡️</div>
+                        <div>
+                            <h3>
+                                내비로 단속카메라 위치 확인하며 안전 운전
+                            </h3>
+                            <p class="mb-6">
+                                내비를 항상 켜두면 후면카메라 과속단속 위치를 미리 알 수 있어요.<br/>
+                                <strong>3-5만원 벌금 걱정 없이 안전하게!</strong>
+                            </p>
+                            <div class="bg-green-900/30 p-6 rounded-lg backdrop-blur-sm">
+                                <p class="text-green-300">
+                                    ✓ 후면카메라 과속단속 위치 사전 알림<br/>
+                                    ✓ 안전 속도 유지로 벌금 방지<br/>
+                                    ✓ 운전에만 집중 가능
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="solution-card">
+                    <div class="flex items-start gap-8">
+                        <div class="text-5xl">📈</div>
+                        <div>
+                            <h3>
+                                거절률 감소로 수락률 향상 + 리워드등급 상승
+                            </h3>
+                            <p class="mb-6">
+                                모르는 지역도 자신있게 수락! 카카오맵 기록도 완벽 활용!<br/>
+                                <strong>수락률 상승으로 인한 리워드등급 상승</strong>
+                            </p>
+                            <div class="bg-purple-900/30 p-6 rounded-lg backdrop-blur-sm">
+                                <p class="text-purple-300">
+                                    ✓ 모르는 지역도 자신있게 수락<br/>
+                                    ✓ 카카오맵 기존 주소 기록 활용<br/>
+                                    ✓ 수락률 상승으로 리워드등급 향상
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Data Section -->
+    <section class="py-20 md:py-28 bg-gradient-to-b from-transparent to-black/20">
+        <div class="container">
+            <div class="max-w-5xl mx-auto">
+                <h2 class="text-center mb-8">
+                    잠깐, 이거 진짜 효과 있나요?
+                </h2>
+                <p class="text-center text-gray-400 mb-14">
+                    직접 사용해본 결과를 보여드릴게요
+                </p>
+
+                <div class="data-card mb-12">
+                    <h3 class="text-green-400">실제 사용자 수익 데이터</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                        <div>
+                            <div class="text-4xl font-bold text-primary mb-3">3시간</div>
+                            <div class="text-xl text-gray-300">운행 시간</div>
+                            <div class="text-gray-500">17:31 - 20:19</div>
+                        </div>
+                        <div>
+                            <div class="text-4xl font-bold text-primary mb-3">108,560원</div>
+                            <div class="text-xl text-gray-300">순수익</div>
+                            <div class="text-gray-500">세후 기준</div>
+                        </div>
+                        <div>
+                            <div class="text-4xl font-bold text-primary mb-3">0건</div>
+                            <div class="text-xl text-gray-300">거절한 주문</div>
+                            <div class="text-gray-500">모든 주문 수락</div>
+                        </div>
+                    </div>
+                    <p class="text-xl text-center mt-8">
+                        💡 <strong>모든 주문을 오토내비로만 처리 → 거절 없이 수락률 100% 달성!</strong>
+                    </p>
+                </div>
+
+                <div class="warning-box">
+                    <h3>🤔 솔직히 말씀드릴게요</h3>
+                    <p>
+                        토요일 저녁이었고, 비가 와서 단가도 높았던 날이라는 점 감안해서 보세요.<br/>
+                        <strong>하지만 중요한 건, 모르는 지역도 자신있게 수락할 수 있었다는 거예요</strong>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Reviews Section -->
+    <section class="py-20 md:py-28">
+        <div class="container">
+            <div class="max-w-5xl mx-auto">
+                <h2 class="text-center mb-14">
+                    실제 사용자들의 <span class="gradient-text">솔직한 후기</span>
+                </h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="review-card">
+                        <div class="review-before">
+                            <span class="text-red-400 text-sm font-bold">😫 사용 전</span>
+                            <p class="mt-3">
+                                "서브폰에 주소를 수기로 입력하는 거 하루에 몇십 번... 진짜 스트레스였어요"
+                            </p>
+                        </div>
+                        <div class="review-after">
+                            <span class="text-green-400 text-sm font-bold">✨ 사용 후</span>
+                            <p class="font-semibold mt-3">
+                                "배민에서 길안내만 터치하면 돼! 서브폰 건드릴 필요가 없어졌어요"
+                            </p>
+                        </div>
+                        <div class="flex items-center gap-3 mt-6">
+                            <span class="text-yellow-400 text-xl">⭐⭐⭐⭐⭐</span>
+                        </div>
+                        <p class="font-semibold mt-4 text-primary">김○○님 / 배민커넥트 3년차</p>
+                    </div>
+                    
+                    <div class="review-card">
+                        <div class="review-before">
+                            <span class="text-red-400 text-sm font-bold">⌛ 사용 전</span>
+                            <p class="mt-3">
+                                "수도권 전체를 이용하는데 내비가 필수인데 손으로 주소 치는게 너무 불편했어요"
+                            </p>
+                        </div>
+                        <div class="review-after">
+                            <span class="text-green-400 text-sm font-bold">✨ 사용 후</span>
+                            <p class="font-semibold mt-3">
+                                "이제 운전하면서도 바로 길안내까지 한번에 터치로 자동실행되니까 너무편해요"
+                            </p>
+                        </div>
+                        <div class="flex items-center gap-3 mt-6">
+                            <span class="text-yellow-400 text-xl">⭐⭐⭐⭐⭐</span>
+                        </div>
+                        <p class="font-semibold mt-4 text-primary">이○○님 / 퀵서비스(인성데이타) 2년차</p>
+                    </div>
+
+                    <div class="review-card">
+                        <div class="review-before">
+                            <span class="text-red-400 text-sm font-bold">📷 사용 전</span>
+                            <p class="mt-3">
+                                "후면카메라 단속 몰라서 3만원 벌금 몇 번 냈어요... 진짜 아까워서"
+                            </p>
+                        </div>
+                        <div class="review-after">
+                            <span class="text-green-400 text-sm font-bold">🛡️ 사용 후</span>
+                            <p class="font-semibold mt-3">
+                                "내비로 단속카메라 위치 미리 알려줘서 과속단속 안 걸려요!"
+                            </p>
+                        </div>
+                        <div class="flex items-center gap-3 mt-6">
+                            <span class="text-yellow-400 text-xl">⭐⭐⭐⭐⭐</span>
+                        </div>
+                        <p class="font-semibold mt-4 text-primary">박○○님 / 배달 시작 1년차</p>
+                    </div>
+
+                    <div class="review-card">
+                        <div class="review-before">
+                            <span class="text-red-400 text-sm font-bold">⏰ 사용 전</span>
+                            <p class="mt-3">
+                                "모르는 지역은 거절하게 되고... 거절률 때문에 배민 리워드 등급이 걱정이었어요"
+                            </p>
+                        </div>
+                        <div class="review-after">
+                            <span class="text-green-400 text-sm font-bold">💰 사용 후</span>
+                            <p class="font-semibold mt-3">
+                                "이제 모르는 지역도 거절률이 낮아져서 배민 리워드등급을 유지하는데 너무좋아요"
+                            </p>
+                        </div>
+                        <div class="flex items-center gap-3 mt-6">
+                            <span class="text-yellow-400 text-xl">⭐⭐⭐⭐⭐</span>
+                        </div>
+                        <p class="font-semibold mt-4 text-primary">최○○님 / 배달 시작 6개월차</p>
+                    </div>
+                </div>
+
+                <div class="data-card mt-14">
+                    <h3>핵심은 이거예요</h3>
+                    <p>
+                        <strong class="text-green-400">"와, 이건 그냥 치트키야. 말도 안 되게 편하네"</strong><br/>
+                        배달 보조 어플은 진짜 이거 하나면 끝이에요. 딴 거 더 필요가 없어요.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Video Section -->
+    <section id="demo" class="py-20 md:py-28 bg-gradient-to-b from-transparent to-black/20">
+        <div class="container">
+            <div class="max-w-5xl mx-auto">
+                <h2 class="text-center mb-8">
+                    직접 보시면 이해됩니다
+                </h2>
+                <p class="text-center text-gray-400 mb-14">
+                    이 영상 보시고 나면 왜 이렇게 배달이 쉬워지는지 이해되실 거예요
+                </p>
+                
+                <div class="video-wrapper">
+                    <iframe 
+                        src="https://www.youtube.com/embed/6Z7wI_nEpW0?rel=0" 
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                        allowfullscreen>
+                    </iframe>
+                </div>
+
+                <div class="video-wrapper">
+                    <iframe 
+                        src="https://www.youtube.com/embed/Krti5LuYDZU?rel=0" 
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                        allowfullscreen>
+                    </iframe>
+                </div>
+
+                <div class="video-wrapper">
+                    <iframe 
+                        src="https://www.youtube.com/embed/ZXUmmErDeSU?rel=0" 
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                        allowfullscreen>
+                    </iframe>
+                </div>
+
+                <div class="success-box text-center">
+                    <p>
+                        <strong class="text-green-400">설치도 전혀 어렵지 않고</strong><br/>
+                        실제로 이렇게 편하게 사용할 수 있어요
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- Pricing Section -->
+    <section class="py-20 md:py-28">
+        <div class="container">
+            <div class="max-w-4xl mx-auto">
+                <h2 class="text-center mb-8">
+                    그럼 이거 얼마예요?
+                </h2>
+                <p class="text-center text-gray-400 mb-14">
+                    솔직히 처음에 가격 보고 "너무 비싼 거 아닌가?" 했는데...
+                </p>
+
+                <div class="warning-box mb-12">
+                    <h3>🤔 잠깐, 계산해보세요</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 text-center">
+                        <div>
+                            <h4 class="font-bold text-xl mb-3">거절률 개선 효과</h4>
+                            <p class="font-bold mb-2" style="font-size: clamp(3rem, 6vw, 4.5rem); color: #10B981;">수락률 ↗</p>
+                            <p style="font-size: clamp(1.25rem, 3vw, 1.75rem); color: #10B981; font-weight: 700;">리워드등급 상승 + 페널티 방지</p>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-xl mb-3">후면카메라 벌금 1회</h4>
+                            <p class="font-bold mb-2" style="font-size: clamp(3rem, 6vw, 4.5rem); color: #FF4757;">3-5만원</p>
+                            <p style="font-size: clamp(1.5rem, 3.5vw, 2.25rem); color: #FF4757; font-weight: 700;">+ 벌점</p>
+                        </div>
+                    </div>
+                    <p class="text-center mt-6">
+                        <strong class="text-yellow-400">효율성 + 안전성으로 수익 개선할 수 있는데...</strong>
+                    </p>
+                </div>
+
+                <div class="data-card mb-12">
+                    <h3>월 3만원을 하루로 계산하면?</h3>
+                    <div class="text-center">
+                        <p class="font-black mb-6 pulse-animation" style="font-size: clamp(4.5rem, 9vw, 7rem); color: #00D4FF; text-shadow: 0 0 40px rgba(0, 212, 255, 0.6), 0 0 80px rgba(0, 212, 255, 0.3); line-height: 1;">하루 1,000원</p>
+                        <p>
+                            커피 한 잔보다 저렴한 가격으로<br/>
+                            <strong class="text-green-400">주소입력 스트레스 + 거절률 고민 + 단속 걱정</strong> 한 번에 해결
+                        </p>
+                    </div>
+                </div>
+
+                <div class="success-box text-center">
+                    <h3 class="text-green-400 mb-4">🎁 지금 신청하면</h3>
+                    <p class="font-black mb-6 pulse-animation" style="font-size: clamp(4rem, 8vw, 6.5rem); color: #00FFB3; text-shadow: 0 0 40px rgba(0, 255, 179, 0.6), 0 0 80px rgba(0, 255, 179, 0.3); line-height: 1;">30일 완전 무료!</p>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="text-green-300 font-semibold">✓ 신용카드 정보 불필요</div>
+                        <div class="text-green-300 font-semibold">✓ 5분 설치 완료</div>
+                        <div class="text-green-300 font-semibold">✓ 언제든 해지 가능</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Price Table Section -->
+    <section class="py-20 md:py-24">
+        <div class="container">
+            <div class="max-w-5xl mx-auto">
+                <h2 class="text-center mb-14">
+                    <span class="gradient-text">오토내비 가격표</span>
+                </h2>
+                
+                <div class="pricing-section">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                        <div class="pricing-card basic">
+                            <div class="price-icon basic" style="width: 70px; height: 70px; margin: 0 auto 20px; border-radius: 20px; display: flex; align-items: center; justify-content: center; font-size: 2.2rem; background: linear-gradient(135deg, rgba(59, 130, 246, 0.3), rgba(30, 64, 175, 0.2));">💰</div>
+                            <h3>Basic</h3>
+                            <p class="mb-8">월 결제</p>
+                            <div class="price-main">3만원</div>
+                            <div class="price-daily">하루 1,000원</div>
+                            <div class="price-features">
+                                <p class="text-blue-300">✓ 모든 기본 기능</p>
+                                <p class="text-blue-300">✓ 자동 주소 입력</p>
+                                <p class="text-blue-300">✓ 단속카메라 알림</p>
+                            </div>
+                        </div>
+                        
+                        <div class="pricing-card standard">
+                            <div class="price-icon standard" style="width: 70px; height: 70px; margin: 0 auto 20px; border-radius: 20px; display: flex; align-items: center; justify-content: center; font-size: 2.2rem; background: linear-gradient(135deg, rgba(16, 185, 129, 0.3), rgba(4, 120, 87, 0.2));">⭐</div>
+                            <h3>Standard</h3>
+                            <p class="mb-8">6개월 결제</p>
+                            <div class="price-original">18만원</div>
+                            <div class="price-main" style="color: #10B981;">15만원</div>
+                            <div class="price-discount" style="color: #10B981;">(15% 할인)</div>
+                            <div class="price-daily">하루 830원</div>
+                            <div class="price-features">
+                                <p class="text-green-300">✓ Basic 모든 기능</p>
+                                <p class="text-green-300">✓ 우선 지원</p>
+                                <p class="text-green-300">✓ 월 3천원 절약</p>
+                            </div>
+                        </div>
+                        
+                        <div class="pricing-card premium premium-popular">
+                            <div class="popular-badge">인기</div>
+                            <div class="price-icon premium" style="width: 70px; height: 70px; margin: 0 auto 20px; border-radius: 20px; display: flex; align-items: center; justify-content: center; font-size: 2.2rem; background: linear-gradient(135deg, rgba(139, 92, 246, 0.3), rgba(91, 33, 182, 0.2));">👑</div>
+                            <h3>Premium</h3>
+                            <p class="mb-8">1년 결제</p>
+                            <div class="price-original">36만원</div>
+                            <div class="price-main" style="color: #8B5CF6;">24만원</div>
+                            <div class="price-discount" style="color: #8B5CF6;">(35% 할인)</div>
+                            <div class="price-daily">하루 660원</div>
+                            <div class="price-features">
+                                <p class="text-purple-300">✓ Standard 모든 기능</p>
+                                <p class="text-purple-300">✓ 최우선 지원</p>
+                                <p class="text-purple-300">✓ 월 1만원 절약</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Timer Section with Application Notices -->
+    <section class="py-14 md:py-18 bg-gradient-to-r from-red-900/30 to-red-800/30 backdrop-blur-sm">
+        <div class="container">
+            <div class="text-center">
+                <h3 class="text-3xl font-bold mb-3 text-red-400">⏰ 잠깐! 무료 체험 마감까지</h3>
+                <p class="text-gray-400 mb-8">원활한 설치지원을 위해 일정인원 이상 신청시 해당 이벤트는 조기 종료될 수 있습니다</p>
+                <div class="flex justify-center gap-4 md:gap-6" id="countdown">
+                    <div class="timer-box">
+                        <div class="timer-number" id="days">07</div>
+                        <div class="timer-label">일</div>
+                    </div>
+                    <div class="timer-box">
+                        <div class="timer-number" id="hours">00</div>
+                        <div class="timer-label">시간</div>
+                    </div>
+                    <div class="timer-box">
+                        <div class="timer-number" id="minutes">00</div>
+                        <div class="timer-label">분</div>
+                    </div>
+                    <div class="timer-box">
+                        <div class="timer-number" id="seconds">00</div>
+                        <div class="timer-label">초</div>
+                    </div>
+                </div>
+                
+                <!-- 신청 알림 -->
+                <div class="application-notice-container mt-8">
+                    <div class="application-notice">
+                        <p class="text-xs text-gray-500 mb-3">📊 최근 신청 현황</p>
+                        
+                        <p id="recent-1" class="mb-1">
+                            <span id="recent-time-1">17분 전</span> <span id="recent-name-1">김○○님</span>이 신청하였습니다
+                        </p>
+                        <p id="recent-2" class="mb-1">
+                            <span id="recent-time-2">43분 전</span> <span id="recent-name-2">이○○님</span>이 신청하였습니다
+                        </p>
+                        <p id="recent-3" class="mb-1">
+                            <span id="recent-time-3">1시간 21분 전</span> <span id="recent-name-3">박○○님</span>이 신청하였습니다
+                        </p>
+                        <p id="recent-4" class="mb-1">
+                            <span id="recent-time-4">2시간 48분 전</span> <span id="recent-name-4">최○○님</span>이 신청하였습니다
+                        </p>
+                        <p id="recent-5" class="mb-1">
+                            <span id="recent-time-5">3시간 36분 전</span> <span id="recent-name-5">정○○님</span>이 신청하였습니다
+                        </p>
+                        <p id="recent-6" class="mb-1">
+                            <span id="recent-time-6">4시간 52분 전</span> <span id="recent-name-6">강○○님</span>이 신청하였습니다
+                        </p>
+                        <p id="recent-7" class="mb-1">
+                            <span id="recent-time-7">오늘 오전</span> <span id="recent-name-7">조○○님</span>이 신청하였습니다
+                        </p>
+                        <p id="recent-8" class="mb-1">
+                            <span id="recent-time-8">오늘 새벽</span> <span id="recent-name-8">윤○○님</span>이 신청하였습니다
+                        </p>
+                        <p id="recent-9" class="mb-1">
+                            <span id="recent-time-9">어제 밤</span> <span id="recent-name-9">장○○님</span>이 신청하였습니다
+                        </p>
+                        <p id="recent-10">
+                            <span id="recent-time-10">어제 저녁</span> <span id="recent-name-10">임○○님</span>이 신청하였습니다
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Application Form -->
+    <section id="apply" class="py-20 md:py-28">
+        <div class="container">
+            <div class="max-w-3xl mx-auto">
+                <h2 class="text-center mb-8">
+                    자, 그럼 신청해보세요
+                </h2>
+                <p class="text-center text-gray-400 mb-12">
+                    30일 무료로 써보고 효과 없으면 그냥 지우시면 됩니다
+                </p>
+                
+                <div class="success-box mb-12">
+                    <div class="text-center">
+                        <h3 class="text-green-400 mb-4">📋 신청 프로세스</h3>
+                        <div class="flex items-center justify-center gap-6 flex-wrap">
+                            <span class="font-semibold">3분 신청</span>
+                            <span class="text-primary text-2xl">→</span>
+                            <span class="font-semibold">5분 설치</span>
+                            <span class="text-primary text-2xl">→</span>
+                            <span class="font-bold text-green-400">바로 사용!</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <form id="applicationForm" action="https://formspree.io/f/xblknnpa" method="POST" class="space-y-8">
+                    <div>
+                        <label class="block mb-3 text-primary font-semibold">성함</label>
+                        <input type="text" name="name" class="form-input" placeholder="성함을 입력해주세요" required>
+                    </div>
+                    
+                    <div>
+                        <label class="block mb-3 text-primary font-semibold">전화번호</label>
+                        <input type="tel" name="phone" class="form-input" placeholder="010-1234-5678" required>
+                    </div>
+                    
+                    <div>
+                        <label class="block mb-3 text-primary font-semibold">카카오톡 ID</label>
+                        <input type="text" name="kakao_id" class="form-input" placeholder="카카오톡 ID (설치 가이드 전송용)" required>
+                    </div>
+                    
+                    <div>
+                        <label class="block mb-3 text-primary font-semibold">구글 이메일 (로그인용)</label>
+                        <input type="email" name="email" class="form-input" placeholder="example@gmail.com" required>
+                    </div>
+                    
+                    <div>
+                        <label class="block mb-3 text-primary font-semibold">현재 가장 큰 고민이나 불편한 점이 있다면 솔직하게 적어주세요</label>
+                        <textarea name="problem" class="form-input" rows="4" placeholder="예: 서브폰에 주소 치는게 귀찮아서요 / 모르는 동네는 거절하게 되는게 스트레스예요 / 단속카메라 때문에 무서워요 등등..." required></textarea>
+                    </div>
+                    
+                    <div class="card">
+                        <h3 class="text-xl font-bold mb-6 text-white">개인정보 수집 동의</h3>
+                        <div class="text-gray-300 space-y-4 mb-8">
+                            <p><strong>1.</strong> 개인정보의 수집 이용 목적: 파일 링크 전송</p>
+                            <p><strong>2.</strong> 수집하는 개인정보의 항목: 이메일 주소, 휴대폰 번호</p>
+                            <p><strong>3.</strong> 개인정보의 보유 및 이용 기간: 개인정보의 수집·이용 목적 달성시까지, 또는 고객이 자신의 개인정보제공의 동의를 철회한 때. 단, 관련 법령의 규정에 의하여 개인정보를 보유할 필요가 있는 경우, 해당 법령에서 정한 기간까지.</p>
+                            <p><strong>4.</strong> 본 이벤트 참여 고객은 개인정보 수집, 활용에 대하여 동의를 거부할 권리가 있으며, 비동의 시 신청이 정상적으로 접수 되지 않습니다.</p>
+                        </div>
+                        <label class="flex items-start gap-4">
+                            <input type="checkbox" name="privacy" class="mt-1 w-5 h-5" required>
+                            <span class="text-gray-300">
+                                개인정보 수집 및 이용에 동의합니다. (설치 가이드 및 고객지원 목적)
+                            </span>
+                        </label>
+                    </div>
+                    
+                    <button type="submit" class="main-btn w-full">
+                        30일 무료로 시작하기
+                    </button>
+                </form>
+                
+                <!-- Contact Information -->
+                <div class="text-center mt-14">
+                    <div class="card inline-block">
+                        <div class="flex items-center gap-6">
+                            <div class="w-20 h-20 rounded-2xl flex items-center justify-center overflow-hidden">
+                                <!-- KakaoTalk Logo SVG -->
+                                <svg viewBox="0 0 1024 1024" class="w-full h-full" xmlns="http://www.w3.org/2000/svg">
+                                    <rect width="1024" height="1024" rx="230" ry="230" fill="#ffdd00"/>
+                                    <path d="M512 192c-176.731 0-320 117.055-320 261.333 0 96.554 69.333 181.333 174.165 229.333L307.2 800l144.64-76.8c19.627 2.986 40.064 4.8 60.16 4.8 176.731 0 320-117.055 320-261.333S688.731 192 512 192z" fill="#1a1a1a"/>
+                                    <text x="512" y="520" text-anchor="middle" fill="#ffdd00" style="font-family: Arial, sans-serif; font-weight: bold; font-size: 140px;">TALK</text>
+                                </svg>
+                            </div>
+                            <div class="text-left">
+                                <p class="text-gray-400 mb-1">궁금한 거 있으면 바로 연락하세요</p>
+                                <p class="text-3xl font-bold gradient-text">heysandmole</p>
+                                <p class="text-gray-500 text-sm">카카오톡 ID</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="warning-box mt-12">
+                        <p>
+                            <strong class="text-yellow-400">지원 플랫폼:</strong> 배민커넥트, 쿠팡이츠 (런칭단계에 있습니다), 퀵서비스(인성데이타)<br/>
+                            <strong class="text-red-400">현재 제한:</strong> 안드로이드 전용 (iOS 현재 계획없음)
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        // 중복 신청 방지를 위한 메모리 저장소
+        let submittedApplications = [];
+        
+        // 브라우저 세션 스토리지 체크 (새로고침해도 유지)
+        function checkDuplicateApplication(phone, email, kakaoId) {
+            // 세션 내 중복 체크
+            const isDuplicate = submittedApplications.some(app => 
+                app.phone === phone || 
+                app.email === email || 
+                app.kakaoId === kakaoId
+            );
+            
+            if (isDuplicate) {
+                return true;
+            }
+            
+            // 쿠키 체크
+            const cookies = document.cookie.split(';');
+            for (let cookie of cookies) {
+                if (cookie.trim().startsWith('autoNavi_applied=')) {
+                    return true;
+                }
+            }
+            
+            return false;
+        }
+        
+        // 신청 정보 저장
+        function saveApplicationInfo(phone, email, kakaoId) {
+            submittedApplications.push({
+                phone: phone,
+                email: email,
+                kakaoId: kakaoId,
+                timestamp: Date.now()
+            });
+            
+            // 쿠키 설정 (7일간 유지)
+            const expiryDate = new Date();
+            expiryDate.setDate(expiryDate.getDate() + 7);
+            document.cookie = `autoNavi_applied=true; expires=${expiryDate.toUTCString()}; path=/`;
+            document.cookie = `autoNavi_phone=${btoa(phone)}; expires=${expiryDate.toUTCString()}; path=/`;
+        }
+        
+        // 전화번호 포맷 정규화
+        function normalizePhone(phone) {
+            return phone.replace(/[^0-9]/g, '');
+        }
+
+        // Countdown - 7일 무한 반복
+        function updateCountdown() {
+            if (!window.countdownStartTime) {
+                window.countdownStartTime = new Date().getTime();
+            }
+            
+            const sevenDaysInMs = 7 * 24 * 60 * 60 * 1000;
+            const now = new Date().getTime();
+            const elapsed = now - window.countdownStartTime;
+            
+            if (elapsed >= sevenDaysInMs) {
+                window.countdownStartTime = now;
+            }
+            
+            const diff = sevenDaysInMs - (now - window.countdownStartTime);
+            
+            if (diff > 0) {
+                const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+                
+                document.getElementById('days').textContent = days.toString().padStart(2, '0');
+                document.getElementById('hours').textContent = hours.toString().padStart(2, '0');
+                document.getElementById('minutes').textContent = minutes.toString().padStart(2, '0');
+                document.getElementById('seconds').textContent = seconds.toString().padStart(2, '0');
+            } else {
+                window.countdownStartTime = new Date().getTime();
+                updateCountdown();
+            }
+        }
+        setInterval(updateCountdown, 1000);
+        updateCountdown();
+
+        // 신청 알림 업데이트
+        function updateApplicationNotices() {
+            const lastNames = ['김', '이', '박', '최', '정', '강', '조', '윤', '장', '임', '한', '오', '서', '신', '권', '황', '안', '송', '류', '전'];
+            const now = new Date();
+            const hour = now.getHours();
+            
+            let timePatterns;
+            
+            if (hour >= 0 && hour < 6) {
+                timePatterns = [
+                    '13분 전', '38분 전', '1시간 7분 전', '2시간 24분 전', '3시간 41분 전',
+                    '4시간 18분 전', '5시간 52분 전', '어제 밤', '어제 저녁', '어제 오후'
+                ];
+            } else if (hour >= 6 && hour < 12) {
+                timePatterns = [
+                    '방금 전', '23분 전', '1시간 12분 전', '2시간 36분 전', '3시간 48분 전',
+                    '4시간 27분 전', '오늘 새벽', '오늘 새벽', '어제 밤', '어제 저녁'
+                ];
+            } else if (hour >= 12 && hour < 18) {
+                timePatterns = [
+                    '17분 전', '42분 전', '1시간 21분 전', '2시간 53분 전', '3시간 16분 전',
+                    '오늘 오전', '오늘 오전', '오늘 새벽', '오늘 새벽', '어제 밤'
+                ];
+            } else {
+                timePatterns = [
+                    '8분 전', '34분 전', '1시간 19분 전', '2시간 43분 전', '3시간 27분 전',
+                    '오늘 오후', '오늘 점심', '오늘 오전', '오늘 새벽', '어제 저녁'
+                ];
+            }
+            
+            for (let i = 1; i <= 10; i++) {
+                const randomLastName = lastNames[Math.floor(Math.random() * lastNames.length)];
+                const timeElement = document.getElementById(`recent-time-${i}`);
+                const nameElement = document.getElementById(`recent-name-${i}`);
+                
+                if (timeElement && nameElement) {
+                    timeElement.textContent = timePatterns[i - 1];
+                    nameElement.textContent = `${randomLastName}○○님`;
+                }
+            }
+        }
+        
+        function scheduleNextUpdate() {
+            const randomDelay = Math.floor(Math.random() * 120000) + 120000;
+            setTimeout(() => {
+                updateApplicationNotices();
+                scheduleNextUpdate();
+            }, randomDelay);
+        }
+        
+        updateApplicationNotices();
+        scheduleNextUpdate();
+
+        // Smooth scrolling
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Form submission with duplicate check
+        const form = document.getElementById('applicationForm');
+        const inputs = form.querySelectorAll('input, textarea');
+        
+        inputs.forEach(input => {
+            input.addEventListener('blur', function() {
+                if (this.value.trim() === '' && this.required) {
+                    this.style.borderColor = 'var(--red)';
+                } else {
+                    this.style.borderColor = '';
+                }
+            });
+        });
+
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const phone = normalizePhone(this.phone.value);
+            const email = this.email.value.toLowerCase().trim();
+            const kakaoId = this.kakao_id.value.trim();
+            
+            // 중복 신청 체크
+            if (checkDuplicateApplication(phone, email, kakaoId)) {
+                alert('⚠️ 이미 신청하셨습니다!\n\n동일한 정보로 중복 신청은 불가능합니다.\n문의사항이 있으시면 카카오톡 ID: heysandmole로 연락주세요.');
+                return;
+            }
+            
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>신청 중...';
+            submitBtn.disabled = true;
+            
+            const formData = new FormData(this);
+            
+            fetch(this.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    // 신청 성공 시 정보 저장
+                    saveApplicationInfo(phone, email, kakaoId);
+                    showThankYouMessage();
+                } else {
+                    throw new Error('Form submission failed');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('신청 중 오류가 발생했습니다. 다시 시도해주세요.');
+            })
+            .finally(() => {
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            });
+        });
+
+        // Thank you message
+        function showThankYouMessage() {
+            const thankYouMessage = document.getElementById('thankYouMessage');
+            thankYouMessage.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeThankYouMessage() {
+            const thankYouMessage = document.getElementById('thankYouMessage');
+            thankYouMessage.style.display = 'none';
+            document.body.style.overflow = 'auto';
+            document.getElementById('applicationForm').reset();
+        }
+    </script>
+</body>
+</html>
